@@ -1,0 +1,453 @@
+// Disciplix Database Schema
+// This schema defines the data models for the AI-powered fitness platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User and Authentication Models
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?
+  name      String
+  avatar    String?
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // OAuth fields
+  googleId   String?
+  appleId    String?
+  facebookId String?
+
+  // Profile and preferences
+  profile      UserProfile?
+  preferences  UserPreferences?
+  subscription Subscription?
+
+  // Health data
+  healthData     HealthDataPoint[]
+  goals          FitnessGoal[]
+  achievements   Achievement[]
+  insights       AIInsight[]
+
+  // Training
+  trainerSessions TrainingSession[] @relation("UserSessions")
+  trainerProfile  TrainerProfile?
+  reviews         Review[]
+
+  // Social
+  followers User[] @relation("UserFollows")
+  following User[] @relation("UserFollows")
+  posts     Post[]
+
+  // Notifications
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id              String        @id @default(cuid())
+  userId          String        @unique
+  age             Int?
+  height          Float? // in cm
+  weight          Float? // in kg
+  activityLevel   ActivityLevel @default(MODERATE)
+  fitnessLevel    FitnessLevel  @default(BEGINNER)
+  medicalHistory  Json?
+  injuries        Json?
+  allergies       Json?
+  emergencyContact Json?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserPreferences {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  units                 Units    @default(METRIC)
+  language              String   @default("en")
+  timezone              String   @default("UTC")
+  theme                 Theme    @default(SYSTEM)
+  
+  // Notification preferences
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  workoutReminders      Boolean  @default(true)
+  achievementAlerts     Boolean  @default(true)
+  socialUpdates         Boolean  @default(false)
+  healthInsights        Boolean  @default(true)
+  trainerMessages       Boolean  @default(true)
+  
+  // Privacy settings
+  shareHealthData       Boolean  @default(false)
+  publicProfile         Boolean  @default(false)
+  allowTrainerAccess    Boolean  @default(true)
+  dataRetention         Int      @default(365) // days
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model Subscription {
+  id              String           @id @default(cuid())
+  userId          String           @unique
+  tier            SubscriptionTier @default(FREE)
+  status          SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean @default(false)
+  trialEndsAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// Health Data Models
+model HealthDataPoint {
+  id         String     @id @default(cuid())
+  userId     String
+  metric     String     // e.g., 'heart_rate', 'steps', 'weight'
+  value      Float
+  unit       String
+  source     DataSource
+  deviceId   String?
+  confidence Float      @default(1.0)
+  metadata   Json?
+  timestamp  DateTime
+  createdAt  DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, metric, timestamp])
+  @@map("health_data_points")
+}
+
+model FitnessGoal {
+  id          String     @id @default(cuid())
+  userId      String
+  type        GoalType
+  title       String
+  description String?
+  target      Float
+  current     Float      @default(0)
+  unit        String
+  deadline    DateTime?
+  status      GoalStatus @default(ACTIVE)
+  priority    Priority   @default(MEDIUM)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("fitness_goals")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // e.g., 'streak', 'milestone', 'challenge'
+  title       String
+  description String
+  icon        String?
+  points      Int      @default(0)
+  rarity      Rarity   @default(COMMON)
+  unlockedAt  DateTime @default(now())
+  metadata    Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
+
+// AI and Insights Models
+model AIInsight {
+  id            String          @id @default(cuid())
+  userId        String
+  type          InsightType
+  category      InsightCategory
+  title         String
+  description   String
+  confidence    Float
+  priority      Priority        @default(MEDIUM)
+  actionable    Boolean         @default(true)
+  actions       Json?           // Array of action objects
+  expiresAt     DateTime?
+  isRead        Boolean         @default(false)
+  isDismissed   Boolean         @default(false)
+  metadata      Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_insights")
+}
+
+// Training and Marketplace Models
+model TrainerProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  bio             String
+  experience      Int      // years
+  hourlyRate      Float
+  currency        String   @default("USD")
+  specialties     String[] // Array of specialties
+  certifications  Json     // Array of certification objects
+  languages       String[]
+  isVerified      Boolean  @default(false)
+  isAvailable     Boolean  @default(true)
+  rating          Float?
+  reviewCount     Int      @default(0)
+  totalSessions   Int      @default(0)
+  location        Json?    // Location object
+  availability    Json?    // Availability schedule
+  
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions TrainingSession[]
+  reviews  Review[]
+
+  @@map("trainer_profiles")
+}
+
+model TrainingSession {
+  id          String        @id @default(cuid())
+  userId      String
+  trainerId   String
+  type        SessionType   @default(VIRTUAL)
+  status      SessionStatus @default(SCHEDULED)
+  title       String?
+  description String?
+  scheduledAt DateTime
+  duration    Int           // minutes
+  price       Float
+  currency    String        @default("USD")
+  location    Json?         // Location or meeting link
+  notes       String?
+  exercises   Json?         // Array of exercise objects
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user    User           @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade)
+  trainer TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  review  Review?
+
+  @@map("training_sessions")
+}
+
+model Review {
+  id             String   @id @default(cuid())
+  userId         String
+  trainerId      String
+  sessionId      String   @unique
+  overall        Int      // 1-5 rating
+  punctuality    Int?
+  professionalism Int?
+  effectiveness  Int?
+  communication  Int?
+  comment        String?
+  isAnonymous    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainer TrainerProfile  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+// Social and Community Models
+model Post {
+  id          String   @id @default(cuid())
+  userId      String
+  content     String
+  images      String[]
+  type        PostType @default(UPDATE)
+  visibility  Visibility @default(PUBLIC)
+  likes       Int      @default(0)
+  comments    Int      @default(0)
+  shares      Int      @default(0)
+  isEdited    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  actionUrl String?
+  createdAt DateTime         @default(now())
+  expiresAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+// Enums
+enum ActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  VERY_ACTIVE
+}
+
+enum FitnessLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum Units {
+  METRIC
+  IMPERIAL
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+  ELITE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
+}
+
+enum DataSource {
+  APPLE_HEALTH
+  GOOGLE_FIT
+  FITBIT
+  GARMIN
+  WHOOP
+  SAMSUNG_HEALTH
+  MANUAL
+  DISCIPLIX_AI
+}
+
+enum GoalType {
+  WEIGHT_LOSS
+  WEIGHT_GAIN
+  MUSCLE_GAIN
+  ENDURANCE
+  STRENGTH
+  FLEXIBILITY
+  GENERAL_FITNESS
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  ABANDONED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum Rarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum InsightType {
+  RECOMMENDATION
+  WARNING
+  ACHIEVEMENT
+  PREDICTION
+  TREND
+  MILESTONE
+}
+
+enum InsightCategory {
+  WORKOUT
+  NUTRITION
+  RECOVERY
+  SLEEP
+  PERFORMANCE
+  HEALTH
+  SAFETY
+}
+
+enum SessionType {
+  IN_PERSON
+  VIRTUAL
+  AI_GUIDED
+  HYBRID
+}
+
+enum SessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum PostType {
+  UPDATE
+  ACHIEVEMENT
+  WORKOUT
+  NUTRITION
+  QUESTION
+  TIP
+}
+
+enum Visibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum NotificationType {
+  WORKOUT_REMINDER
+  ACHIEVEMENT
+  SOCIAL_UPDATE
+  INSIGHT
+  TRAINER_MESSAGE
+  SYSTEM
+  PROMOTIONAL
+}
