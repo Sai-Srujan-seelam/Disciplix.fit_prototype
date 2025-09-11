@@ -14,7 +14,8 @@
       "Bash(npm test:*)",
       "Bash(curl:*)",
       "Bash(./scripts/demo.sh:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": []
