@@ -15,7 +15,8 @@
       "Bash(curl:*)",
       "Bash(./scripts/demo.sh:*)",
       "Bash(git init:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(git remote set-url:*)"
     ],
     "deny": [],
     "ask": []
