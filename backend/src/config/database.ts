@@ -8,11 +8,6 @@ export const prisma = new PrismaClient({
     : ['error'],
 })
 
-// Handle connection events
-prisma.$on('beforeExit', async () => {
-  logger.info('Prisma client disconnecting...')
-})
-
 // Test database connection
 export const connectDatabase = async (): Promise<void> => {
   try {
