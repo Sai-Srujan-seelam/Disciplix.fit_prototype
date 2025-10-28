@@ -1,44 +1,35 @@
 import express from 'express'
-import { authenticateToken, requireSubscription } from '@/middleware/auth'
+import { authenticateToken, optionalAuth, requireSubscription } from '@/middleware/auth'
+import { body } from 'express-validator'
+import { validateRequest } from '@/middleware/validateRequest'
+import { TrainerController } from '@/controllers/TrainerController'
 
 const router = express.Router()
+const trainerController = new TrainerController()
 
-// All routes require authentication
-router.use(authenticateToken)
+// Trainer marketplace - public endpoints with optional auth
+router.get('/trainers', optionalAuth, trainerController.getTrainers)
+router.get('/trainers/specialties', trainerController.getSpecialties)
+router.get('/trainers/:id', optionalAuth, trainerController.getTrainerById)
 
-// Trainer marketplace
-router.get('/trainers', (req, res) => {
-  res.json({ status: 'success', message: 'Get available trainers - Coming soon' })
-})
+// Session booking - requires authentication
+router.post(
+  '/trainers/:trainerId/book',
+  authenticateToken,
+  requireSubscription(['PREMIUM', 'ELITE']),
+  [
+    body('scheduledAt').isISO8601().withMessage('Invalid date format'),
+    body('duration').isInt({ min: 30, max: 180 }).withMessage('Duration must be between 30 and 180 minutes'),
+    body('type').optional().isIn(['IN_PERSON', 'VIRTUAL', 'HYBRID']),
+    body('notes').optional().isString()
+  ],
+  validateRequest,
+  trainerController.bookSession
+)
 
-router.get('/trainers/:id', (req, res) => {
-  res.json({ status: 'success', message: 'Get trainer details - Coming soon' })
-})
+router.get('/sessions', authenticateToken, trainerController.getUserSessions)
 
-router.get('/trainers/:id/availability', (req, res) => {
-  res.json({ status: 'success', message: 'Get trainer availability - Coming soon' })
-})
-
-// Session booking (requires Premium or Elite)
-router.post('/sessions/book', requireSubscription(['PREMIUM', 'ELITE']), (req, res) => {
-  res.json({ status: 'success', message: 'Book training session - Coming soon' })
-})
-
-router.get('/sessions', (req, res) => {
-  res.json({ status: 'success', message: 'Get user sessions - Coming soon' })
-})
-
-router.get('/sessions/:id', (req, res) => {
-  res.json({ status: 'success', message: 'Get session details - Coming soon' })
-})
-
-router.put('/sessions/:id/reschedule', (req, res) => {
-  res.json({ status: 'success', message: 'Reschedule session - Coming soon' })
-})
-
-router.post('/sessions/:id/cancel', (req, res) => {
-  res.json({ status: 'success', message: 'Cancel session - Coming soon' })
-})
+router.post('/sessions/:sessionId/cancel', authenticateToken, trainerController.cancelSession)
 
 // Reviews and ratings
 router.post('/sessions/:id/review', (req, res) => {

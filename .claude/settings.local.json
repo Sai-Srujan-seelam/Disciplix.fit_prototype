@@ -16,7 +16,15 @@
       "Bash(./scripts/demo.sh:*)",
       "Bash(git init:*)",
       "Bash(git branch:*)",
-      "Bash(git remote set-url:*)"
+      "Bash(git remote set-url:*)",
+      "Bash(test:*)",
+      "Bash(docker-compose:*)",
+      "Bash(brew list:*)",
+      "Bash(brew services start:*)",
+      "Bash(brew services:*)",
+      "Bash(psql:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

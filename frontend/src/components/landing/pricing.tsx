@@ -138,73 +138,90 @@ export function Pricing() {
                 } transition-all duration-300 bg-gradient-to-br ${tier.gradient}`}
               >
                 {tier.mostPopular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <div className="flex items-center gap-1 rounded-full bg-disciplix-primary px-3 py-1 text-sm font-semibold text-white">
-                      <Star className="h-4 w-4 fill-white" />
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-disciplix-primary to-disciplix-secondary px-4 py-1.5 text-sm font-bold text-white shadow-lg border-2 border-white">
+                      <Star className="h-4 w-4 fill-white" aria-hidden="true" />
                       Most Popular
                     </div>
                   </div>
                 )}
+                {tier.name === 'Elite' && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-1.5 text-sm font-bold text-white shadow-lg border-2 border-white">
+                      <Crown className="h-4 w-4 fill-white" aria-hidden="true" />
+                      Premium
+                    </div>
+                  </div>
+                )}
                 
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-semibold">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
                       {tier.name}
-                      {tier.name === 'Elite' && (
-                        <Crown className="inline-block ml-2 h-5 w-5 text-yellow-500" />
-                      )}
                     </CardTitle>
                   </div>
-                  <CardDescription className="text-base">
+                  <CardDescription className="text-base text-gray-600 dark:text-gray-400 min-h-[3rem]">
                     {tier.description}
                   </CardDescription>
-                  <div className="mt-6">
+                  <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-baseline gap-x-2">
-                      <span className="text-4xl font-bold tracking-tight text-foreground">
+                      <span className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-disciplix-primary to-disciplix-secondary bg-clip-text text-transparent">
                         {tier.priceMonthly}
                       </span>
                       {tier.priceMonthly !== '$0' && (
-                        <span className="text-sm font-semibold leading-6 tracking-wide text-muted-foreground">
+                        <span className="text-base font-semibold text-gray-600 dark:text-gray-400">
                           /month
                         </span>
                       )}
                     </div>
                     {tier.priceYearly !== '$0' && (
-                      <p className="text-sm leading-6 text-muted-foreground">
-                        or {tier.priceYearly}/year (save 17%)
-                      </p>
+                      <div className="mt-2 inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm font-semibold">
+                        <span className="text-green-600 dark:text-green-400">💰</span>
+                        Save 17% with annual billing ({tier.priceYearly}/year)
+                      </div>
                     )}
                   </div>
                 </CardHeader>
                 
-                <CardContent className="flex-1 flex flex-col">
-                  <ul role="list" className="space-y-3 text-sm leading-6 text-muted-foreground flex-1">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex gap-x-3">
-                        <Check className="h-5 w-5 flex-none text-disciplix-primary" aria-hidden="true" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <div className="mt-8">
-                    <Link href={tier.href}>
+                <CardContent className="flex-1 flex flex-col pt-6">
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">
+                      What's Included
+                    </h3>
+                    <ul role="list" className="space-y-3.5 text-sm leading-6 flex-1" aria-label={`${tier.name} plan features`}>
+                      {tier.features.map((feature) => (
+                        <li key={feature} className="flex gap-x-3 items-start">
+                          <Check className="h-5 w-5 flex-none text-disciplix-primary mt-0.5" aria-hidden="true" />
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="mt-auto space-y-4">
+                    <Link href={tier.href} className="block">
                       <Button
                         size="lg"
                         variant={tier.buttonVariant}
-                        className="w-full"
+                        className="w-full text-base font-semibold h-12 shadow-lg hover:shadow-xl transition-all"
+                        aria-label={`Get started with ${tier.name} plan`}
                       >
                         {tier.name === 'Basic' ? 'Start Free' : `Start ${tier.name}`}
                       </Button>
                     </Link>
+
+                    <div className="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
+                      <span className={tier.name === 'Basic' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}>
+                        {tier.name === 'Basic' ? '🎉' : '✨'}
+                      </span>
+                      <span className="font-medium">
+                        {tier.name === 'Basic'
+                          ? 'No credit card required'
+                          : '7-day free trial • Cancel anytime'
+                        }
+                      </span>
+                    </div>
                   </div>
-                  
-                  <p className="text-xs leading-5 text-muted-foreground text-center mt-4">
-                    {tier.name === 'Basic' 
-                      ? 'No credit card required'
-                      : '7-day free trial • Cancel anytime'
-                    }
-                  </p>
                 </CardContent>
               </Card>
             </motion.div>

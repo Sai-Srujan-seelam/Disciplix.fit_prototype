@@ -130,3 +130,6 @@ backend/uploads/
 frontend/.next/
 frontend/out/
 node_modules
+
+# Claude Code settings
+.claude/

@@ -45,42 +45,57 @@ export function Hero() {
           animate="animate"
           variants={staggerChildren}
         >
-          <motion.div 
-            className="inline-flex items-center gap-2 rounded-full border border-disciplix-primary/20 bg-disciplix-primary/10 px-4 py-2 text-sm font-medium text-disciplix-primary mb-8"
+          <motion.div
+            className="inline-flex items-center gap-2 rounded-full border-2 border-disciplix-primary/30 bg-gradient-to-r from-disciplix-primary/15 to-disciplix-secondary/15 px-5 py-2.5 text-sm font-semibold text-disciplix-primary shadow-md mb-8"
             variants={fadeInUp}
+            role="status"
+            aria-label="Feature announcement"
           >
-            <Zap className="h-4 w-4" />
+            <Zap className="h-4 w-4 text-disciplix-accent" aria-hidden="true" />
             AI-Powered Fitness Revolution
           </motion.div>
-          
-          <motion.h1 
-            className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl bg-gradient-to-r from-disciplix-primary via-disciplix-secondary to-disciplix-accent bg-clip-text text-transparent"
+
+          <motion.h1
+            className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl"
             variants={fadeInUp}
           >
-            Transform Your Fitness Journey with AI
+            <span className="block text-gray-900 dark:text-white">Transform Your</span>
+            <span className="block bg-gradient-to-r from-disciplix-primary via-disciplix-secondary to-disciplix-accent bg-clip-text text-transparent mt-2">
+              Fitness Journey with AI
+            </span>
           </motion.h1>
-          
-          <motion.p 
-            className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto"
+
+          <motion.p
+            className="mt-6 text-lg sm:text-xl leading-8 text-gray-700 dark:text-gray-300 max-w-2xl mx-auto font-medium"
             variants={fadeInUp}
           >
-            Disciplix seamlessly integrates health tracking, personalized AI coaching, and human expertise 
+            Disciplix seamlessly integrates health tracking, personalized AI coaching, and human expertise
             to deliver transformative fitness experiences tailored just for you.
           </motion.p>
           
-          <motion.div 
-            className="mt-10 flex items-center justify-center gap-x-6"
+          <motion.div
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6"
             variants={fadeInUp}
           >
-            <Link href="/register">
-              <Button size="xl" variant="gradient" className="flex items-center gap-2">
+            <Link href="/register" className="w-full sm:w-auto">
+              <Button
+                size="xl"
+                variant="gradient"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 font-semibold shadow-xl hover:shadow-2xl"
+                aria-label="Start your free 7-day trial"
+              >
                 Start Your Free Trial
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
               </Button>
             </Link>
-            <Link href="#demo">
-              <Button size="xl" variant="outline" className="flex items-center gap-2">
-                <Play className="h-4 w-4" />
+            <Link href="#demo" className="w-full sm:w-auto">
+              <Button
+                size="xl"
+                variant="outline"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 font-semibold border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                aria-label="Watch product demonstration video"
+              >
+                <Play className="h-5 w-5" aria-hidden="true" />
                 Watch Demo
               </Button>
             </Link>
